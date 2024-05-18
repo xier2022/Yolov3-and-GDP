@@ -1,0 +1,16 @@
+var ul = document.getElementById("names");
+        var faceNames = {{faceNames|tojson}}
+        for (let face of faceNames) {
+            // 创建新的列表项目li
+            var li = document.createElement('li');
+            var radio = document.createElement("input")
+            radio.type = "radio";
+            radio.name = "faceName";
+            radio.value = face;
+            li.appendChild(radio)
+            // // 给li添加新的内容
+            var text = document.createTextNode(face);
+            li.appendChild(radio);
+            li.appendChild(text);
+            ul.appendChild(li);
+        }

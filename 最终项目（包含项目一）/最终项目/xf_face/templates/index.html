@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>人脸识别体验</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/bootstrap.min.css") }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/signin.css") }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/sweetalert.css") }}">
+    <script src="{{ url_for("static",filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/sweetalert.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/xtalert.js') }}"></script>
+    <script src="https://cdn.staticfile.net/jquery/1.10.2/jquery.min.js"></script>
+    <style>
+        #names li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        #names li input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        video {
+            width: 300px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 50%;
+            overflow: hidden;
+            aspect-ratio: 1/1;
+            transform: scaleX(-1);
+        / / 镜像
+        }
+    </style>
+</head>
+
+<body>
+<div>
+    <div style="float:left;margin-top:5px;margin-left:20px;">
+        <video id="video" width="480" height="320" style="margin: 0 auto; display: inline" autoplay></video>
+        <div hidden>
+            <canvas id="canvas" width="480" height="320"></canvas>
+        </div>
+    </div>
+    <div class="container" style="width:500px;float:left;">
+        <form class="form-signin" method="post">
+            <h2 class="form-signin-heading">人脸识别系统—体验版</h2>
+            <label for="username" class="sr-only">用户名</label>
+            <input type="text" id="username" class="form-control" name="username" placeholder="用户名" required
+                   autofocus>
+            <label for="pwd" class="sr-only">密码</label>
+            <input type="password" id="pwd" class="form-control" name="pwd" placeholder="密码" required>
+            <!--                <div class="checkbox">-->
+            <!--                    <label>-->
+            <!--                        <input type="checkbox" value="remember-me"> Remember me-->
+            <!--                    </label>-->
+            <!--                </div>-->
+            <button class="btn btn-lg btn-primary btn-block" type="button" id="register">人脸识别注册</button>
+            <button class="btn btn-lg btn-primary btn-block" type="button" id="login">人脸识别登录</button>
+            <button class="btn btn-lg btn-primary btn-block" type="button" id="open-video">开启摄像头</button>
+{#            <button class="btn btn-lg btn-primary btn-block" type="button" id="show-user">管理注册人员</button>#}
+        </form>
+    </div> <!-- /container -->
+    <div id="table-container" style="float:left; margin-top:5px; margin-left:20px; display:none;">
+        <br/>
+        <ul id="names"></ul>
+        </br>
+        <!--        <button id="deleteFace">删除选中</button>-->
+        <button class="btn btn-lg btn-primary btn-block" type="button" id="deleteFace">删除选中</button>
+
+        <!-- 在表格下方显示消息 -->
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+
+        var video = document.getElementById('video');
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext('2d');
+        var isopen = false
+
+        document.getElementById("register").addEventListener("click", function () {
+            var username_btn = document.getElementById("username");
+            var password_btn = document.getElementById("pwd");
+            var username = username_btn.value;
+            var password = password_btn.value;
+            if (username == "" | username == null | password == "" | password == null) {
+                xtalert.alertErrorToast("必须输入用户名和密码");
+            } else {
+                var video_btn = document.getElementById("open-video");
+                if (!isopen) {
+                    xtalert.alertErrorToast("请先打开摄像头");
+                    return;
+                }
+                context.drawImage(video, 0, 0, 480, 320);
+                var base64_image = canvas.toDataURL('image/jpg');
+                $.post(
+                "/register",
+                { "image": base64_image, "username":username, "password":password },
+                function (data, status) {
+                    if (data.code == 200){
+                        xtalert.alertSuccessToast(data.msg);
+                        setTimeout(function(){
+                       var new_url = "home_page/" + data.username + "/" + data.data;
+                        window.location =new_url;
+                        username_btn.value = "";
+                        password_btn.value = "";
+                            },2000);
+                    }else{
+                       xtalert.alertErrorToast(data.msg)
+                    }
+                    })
+            }
+        });
+        // 开启摄像头
+        document.getElementById("open-video").addEventListener("click", function () {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && !isopen) {
+                navigator.mediaDevices.getUserMedia({video: true}).then(
+                    function (str) {
+                        stream = str;
+                        video.srcObject = stream;
+                        video.play();
+                    })
+                this.innerHTML = '关闭摄像头'
+                isopen = true
+            } else {
+                if (stream) {
+                    var tracks = stream.getTracks();
+                    tracks.forEach(function (track) {
+                        track.stop();
+                    });
+                    stream = null;
+                }
+
+                video.srcObject = null;
+                this.innerHTML = '开启摄像头'
+                isopen = false
+            }
+        })
+        // 暂停摄像头
+        // document.getElementById("open-video").addEventListener("click", function (){
+        //     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && !isopen) {
+        //         navigator.mediaDevices.getUserMedia({ video: true }).then(
+        //             function (stream) {
+        //                 video.srcObject = stream;
+        //                 video.play();}
+        //         )
+        //         this.innerHTML='关闭摄像头'
+        //         isopen = true
+        //     }
+        //     else{
+        //         navigator.mediaDevices.getUserMedia({ video: true }).then(
+        //             function (stream) {
+        //                 video.srcObject = stream;
+        //                 video.pause();}
+        //         )
+        //         this.innerHTML='开启摄像头'
+        //         isopen=false
+        //     }
+        //
+        //     // this.disabled=true;
+        // })
+
+        document.getElementById("login").addEventListener("click", function (){
+             var video_btn = document.getElementById("open-video");
+            if ( !isopen ){
+                xtalert.alertErrorToast("请先打开摄像头");
+                return;
+            }
+            context.drawImage(video, 0, 0, 480, 320);
+            var base64_image = canvas.toDataURL('image/jpg');
+            $.post(
+                "/login",
+                { "image": base64_image},
+                function (data, status) {
+                    if (data.code !=200){
+                        xtalert.alertErrorToast(data.msg)
+                    }else {
+                       xtalert.alertSuccessToast(data.msg);
+                        setTimeout(function(){
+                            var new_url = "home_page/" + data.username + "/" + data.data;
+                            window.location =new_url;
+                            },2000);
+                    }
+                }
+            )
+         })
+
+        // 跳转
+        var tableContainer = document.getElementById("table-container");
+
+        {#document.getElementById("show-user").addEventListener("click", function () {#}
+        {#    var new_url = 'manage';#}
+        {#    window.location = new_url;#}
+        {#    //     // 如果表格容器是隐藏的，则显示它；否则隐藏它#}
+        {#    //     if (tableContainer.style.display === "none") {#}
+        {#    //         tableContainer.style.display = "block";#}
+        {#    //     } else {#}
+        {#    //         tableContainer.style.display = "none";#}
+        {#    //     }#}
+        {#    // });#}
+        {#    // document.getElementById("deleteFace").addEventListener("click", function () {#}
+        {#    // 	var faceNames= document.getElementsByName("faceName");#}
+        {#    // 	var faceName='';#}
+        {#    // 	for(var i=0;i<faceNames.length;i++){#}
+        {#    // 		if(faceNames[i].checked){#}
+        {#    // 			faceName = faceNames[i].value#}
+        {#    // 			break#}
+        {#    // 		}#}
+        {#    // 	}#}
+        {#    // 	$.post(#}
+        {#    // 			"/del_feature",#}
+        {#    // 			{"name":faceName},#}
+        {#    //#}
+        {#    // 			function(data,status){#}
+        {#    // 				alert(data.msg)#}
+        {#    // 				window.location.reload()#}
+        {#    // 				}#}
+        {#    //#}
+        {#    // 	)#}
+        {##}
+        {# })#}
+    });
+</script>
+</body>
+</html>

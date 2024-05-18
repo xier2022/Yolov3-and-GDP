@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo</title>
+  <!-- 请勿在项目正式环境中引用该 layui.css 地址 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/css/layui.css">
+  <style>
+  /* 设置图片容器的宽度和高度 */
+  .layui-carousel img {
+    width: 100%; /* 设置图片宽度为父元素宽度的百分之百 */
+    height: auto; /* 自动调整图片高度，保持宽高比 */
+  }
+  </style>
+</head>
+<body>
+<ul class="layui-nav ">
+  <li class="layui-nav-item layui-this"><a href="">首页</a></li>
+{#  <li class="layui-nav-item">#}
+{#    <a href="javascript:;">常规</a>#}
+{#  </li>#}
+
+  <li class="layui-nav-item">
+    <a href="{{ url_for('show_one') }}">人脸比对</a>
+  </li>  <li class="layui-nav-item">
+    <a href="{{ url_for('show_two') }}">特征分析</a>
+  </li>
+
+  <li class="layui-nav-item">
+      <a href="{{ url_for('show_three') }}">opencv</a></li>
+
+  <li class="layui-nav-item">
+      <a href="{{ url_for('show_four') }}">聊天</a></li>
+
+
+  <li class="layui-nav-item">
+    <a href="javascript:;">子级</a>
+    <dl class="layui-nav-child">
+      <dd><a href="{{ url_for('show_one') }}">人脸比对</a></dd>
+      <dd><a href="{{ url_for('show_two') }}">特征分析</a></dd>
+      <dd><a href="{{ url_for('show_three') }}">opencv</a></dd>
+      <dd><a href="{{ url_for('show_four') }}">聊天</a></dd>
+    </dl>
+
+  </li>
+{#  <li class="layui-nav-item"><a href="">导航</a></li>#}
+
+</ul>
+<ul class="layui-nav layui-layout-right">
+  <li class="layui-nav-item layui-hide layui-show-sm-inline-block">
+    <a href="{{ url_for('show_denglu') }}">
+<!--      <img src="//unpkg.com/outeres@0.0.10/img/layui/icon-v2.png" class="layui-nav-img">-->
+      <i class="layui-icon layui-icon-username" style="font-size: 13px; color: #1E9FFF;"></i>
+<!--      <i class="layui-icon layui-icon-face-smile" style="font-size: 30px; color: #1E9FFF;"></i>-->
+      登录
+    </a>
+<!--    <dl class="layui-nav-child">-->
+<!--      <dd><a href="javascript:;">Your Profile</a></dd>-->
+<!--      <dd><a href="javascript:;">Settings</a></dd>-->
+<!--      <dd><a href="javascript:;">Sign out</a></dd>-->
+<!--    </dl>-->
+  </li>
+</ul>
+
+{#<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">#}
+{#  <div class="layui-carousel" id="ID-carousel-demo-image">#}
+{#    <div carousel-item>#}
+{#      <div><img src="D:\电脑软件2\2750186342\FileRecv\MobileFile\1712581384126.jpg"></div>#}
+{#      <div><img src="D:\电脑软件2\2750186342\FileRecv\MobileFile\1712581384137.jpg"></div>#}
+{#      <div><img src="D:\电脑软件2\2750186342\FileRecv\MobileFile\1712581384196.jpg"></div>#}
+{#      <div><img src="D:\电脑软件2\2750186342\FileRecv\MobileFile\1712561666483.jpg"></div>#}
+{#      <div><img src="D:\电脑软件2\2750186342\FileRecv\MobileFile\1712581384183.jpg"></div>#}
+{#    </div>#}
+{#  </div>#}
+{#</div>#}
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+  <div class="layui-carousel" id="ID-carousel-demo-image">
+    <div carousel-item>
+      <div><img src="https://p3.itc.cn/images01/20210720/cf4f65c1cb864e858f166130820a18c0.jpeg" class="carousel-img"></div>
+      <div><img src="https://img1.baidu.com/it/u=2805840500,4208664671&fm=253&fmt=auto&app=138&f=JPEG?w=833&h=500" class="carousel-img"></div>
+      <div><img src="https://img95.699pic.com/photo/40178/3327.jpg_wh300.jpg" class="carousel-img"></div>
+      <div><img src="https://pic.rmb.bdstatic.com/981e2d1a88ed6ba149b002b3387f94c7.jpeg" class="carousel-img"></div>
+      <div><img src="https://img95.699pic.com/photo/40103/0298.jpg_wh300.jpg" class="carousel-img"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- 请勿在项目正式环境中引用该 layui.js 地址 -->
+<script src="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/layui.js"></script>
+<script>
+layui.use(function(){
+  var carousel = layui.carousel;
+  // 渲染 - 图片轮播
+  carousel.render({
+    elem: '#ID-carousel-demo-image',
+    width: '960px',
+    height: '480px',
+    interval: 1000
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>主页</title>
+    <style>
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	html,body{
+		height: 100%;
+		width: 100%;
+		background: #F0F2F5;
+	}
+	#main{
+		height: 100%;
+		width: 100%;
+	}
+	#main-left{
+		height: 100%;
+		width: 50%;
+		float: left;
+		display: flex;
+	}
+	#main-left-image {
+		height: 50%;
+		width: 50%;
+		margin-left: 40%;
+		margin-top: 15%;
+	}
+	#main-right{
+		height: 100%;
+		width: 50%;
+		float: right;
+		display: flex;
+	}
+	#main-right-text {
+		height: 50%;
+		width: 100%;
+		margin-left: 5%;
+		margin-top: 28%;
+		color: #2A39DD;
+	}
+</style>
+
+</head>
+<body>
+
+	<div id="main">
+		<div id="main-left">
+			<div id="main-left-image">
+				<img src="{{url_for('static', filename='images/'+ img_path)}}"></img>
+			</div> <!-- main-left-image-->
+		</div> <!-- main-left-->
+
+		<div id="main-right">
+			<div id="main-right-text">
+				 <h1>
+                     {{username}} 您好，欢迎来到火星！
+				 </h1>
+			</div> <!-- main-right-text-->
+		</div> <!-- main-right-->
+	</div> <!-- main-->
+
+</body>
+</html>

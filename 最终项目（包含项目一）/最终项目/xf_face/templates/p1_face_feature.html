@@ -1,0 +1,154 @@
+<!--人脸特征分析界面代码-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸特征分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/css/layui.css">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+        }
+        #photo-preview {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /*background-image: url('bgd1.png');*/
+        }
+    </style>
+    <style>
+        /* 自定义按钮样式 */
+        .layui-btn-container {
+            text-align: center; /* 按钮居中 */
+        }
+
+        /* 悬停时的样式 */
+        .layui-btn:hover {
+            background-color: #2b6cb0; /* 深蓝色背景 */
+        }
+    </style>
+</head>
+
+
+
+<body class="bg-gray-200">
+{#    <div class="flex justify-center items-center bg-blue-600 h-16">#}
+{#        <a href="new/" class="home-button">&#8592; 返回主页</a>#}
+{#        <h1 class="text-white text-2xl">人脸特征分析</h1>#}
+{#    </div>#}
+    <div class="w-full bg-blue-800 py-6 px-4 text-white text-center text-xl font-semibold flex justify-between items-center">
+        <a href="new/" class="text-sm">返回主页</a>
+        <span class="flex-grow">特征分析</span>
+        <div></div><!-- 空的 div 元素用于撑开中间内容，使其居中 -->
+    </div>
+
+        <div class="flex justify-center space-x-10 mt-10">
+
+            <div class="relative bg-transparent rounded-lg w-1/3 h-144 flex justify-center items-center border-4 border-blue-400">
+    <!-- 图片预览部分 -->
+                <div class="bg-transparent w-64 h-96 mb-4">
+                    <img id="photo-preview" class="w-full h-full object-cover" src="https://img.zcool.cn/community/01ae535b7d368da80120577d2373bb.jpeg?x-oss-process=image/resize,m_fill,w_260,h_195,limit_0/auto-orient,1/sharpen,100" alt="Selected photo preview">
+<!--                    <span id="photo-placeholder" class="absolute inset-0 flex justify-center items-center text-blue-400 text-lg">照片</span>-->
+                </div>
+
+            </div>
+
+
+<!--            <div class="bg-transparent rounded-3xl w-1/4 h-144 p-6 border-4 border-blue-400">-->
+            <div class="flex flex-col bg-transparent rounded-3xl w-1/4 h-144 p-6 border-4 border-blue-400">
+                <p class="text-lg mb-4">性别：</p>
+                <p class="border border-blue-300 text-blue-500 w-full h-8 px-2 flex items-center justify-center" id="message_sex" disabled></p>
+                <p class="text-lg mb-4">年龄：</p>
+                <p class="border border-blue-300 text-blue-500 w-full h-8 px-2 flex items-center justify-center" id="message_age" disabled></p>
+                <p class="text-lg mb-4">情绪：</p>
+                <p class="border border-blue-300 text-blue-500 w-full h-8 px-2 flex items-center justify-center" id="message_expression" disabled></p>
+                <p class="text-lg mb-4">颜值：</p>
+                <p class="border border-blue-300 text-blue-500 w-full h-8 px-2 flex items-center justify-center" id="message_score" disabled></p>
+            </div>
+            </div>
+        </div>
+
+
+    <div class="flex justify-center mt-6">
+        <div style="width: 100%;">
+            <input type="file" id="photo-upload" class="hidden" accept="image/*" onchange="previewPhoto()">
+<!--            <input id="photo-upload" class="image-upload" type="file" accept="image/*" onchange="document.getElementById('photo-preview').src = window.URL.createObjectURL(this.files[0])" style="display: none;">-->
+
+            <button class="layui-btn layui-btn-normal layui-btn-radius" onclick="document.getElementById('photo-upload').click()" style="margin-left: 33.33%;">选择图片</button>
+<!--            <input id="upload1" class="image-upload" type="file" accept="image/*" onchange="document.getElementById('photo-preview').src = window.URL.createObjectURL(this.files[0])" style="display: none;">-->
+            <button id="getDataBtn_2" type="button" class="layui-btn layui-btn-normal layui-btn-radius" style="margin-left: 26%;">特征识别</button>
+        </div>
+    </div>
+
+
+
+   <script src="https://lib.baomitu.com/jquery/3.5.1/jquery.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/layui.js"></script>|
+
+   <script>
+    // function previewPhoto() {
+    //     var fileInput = document.getElementById('photo-upload');
+    //     var file = fileInput.files[0];
+    //     var reader = new FileReader();
+    //     // var photoPlaceholder = document.getElementById('photo-placeholder');
+    //     reader.onload = function(e) {
+    //         var preview = document.getElementById('photo-preview');
+    //         preview.src = e.target.result;
+    //         preview.style.display = 'block';
+    //     }
+    //     reader.readAsDataURL(file);
+    // }
+    function previewPhoto() {
+        var fileInput = document.getElementById('photo-upload');
+        var file = fileInput.files[0];
+        var reader = new FileReader();
+        var photoPlaceholder = document.getElementById('photo-placeholder');
+        reader.onload = function(e) {
+            var preview = document.getElementById('photo-preview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            preview.onload = function() {
+                // 隐藏照片占位符文本
+                photoPlaceholder.style.display = 'none';
+            };
+        }
+        reader.readAsDataURL(file);
+    }
+
+
+    $(document).ready(function(){
+        $("#getDataBtn_2").click(function (){
+            var fileInput = document.getElementById('photo-upload');
+            var file = fileInput.files[0]; // 获取用户选择的文件
+            var formData = new FormData();
+            formData.append('file', file); // 将文件添加到 FormData 中，'file' 是表单字段的名称
+
+            // 发送 AJAX 请求
+            $.ajax({
+                url:'/age',
+                type:'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response){
+                    console.log(response);
+                    // 在这里处理上传成功的响应
+                    console.log(response.label); // 访问标签值
+                    $("#message_sex").text(response.ret.r_sex); // 更新消息文本
+                    $("#message_age").text(response.ret.age_range); // 更新消息文本
+                    $("#message_expression").text(response.ret.expression); // 更新消息文本
+                    $("#message_score").text(response.ret.score); // 更新消息文本
+                },
+                error: function(error){
+                    console.log(error);
+                    // 在这里处理上传失败的情况
+                }
+            });
+        });
+    });
+    </script>
+
+</body>
+</html>

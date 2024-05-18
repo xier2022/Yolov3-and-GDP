@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+<!--    <link rel="canonical" href="https://getbootstrap.com/docs/3.4/examples/signin/">-->
+
+    <title>人脸识别体验</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/bootstrap.min.css")}}">
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/signin.css")}}">
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/sweetalert.css")}}">
+<!--    <script src="./bootstrap-3.4.1-dist/js/jquery-3.6.0.min.js"></script>-->
+    <script src="{{ url_for("static",filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/sweetalert.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/xtalert.js') }}"></script>
+</head>
+
+<body>
+    <div class="container">
+        <form class="form-signin" method="post">
+            <h2 class="form-signin-heading">人脸识别系统—体验版</h2>
+            <label for="username" class="sr-only">用户名</label>
+            <input type="text" id="username" class="form-control" name="username" placeholder="用户名" required autofocus>
+            <label for="pwd" class="sr-only">密码</label>
+            <input type="password" id="pwd" class="form-control" name="pwd" placeholder="密码" required>
+<!--            <div class="checkbox">-->
+<!--                <label>-->
+<!--                    <input type="checkbox" value="remember-me"> Remember me-->
+<!--                </label>-->
+<!--            </div>-->
+            <button class="btn btn-lg btn-primary btn-block" type="button" id="register">人脸识别注册</button>
+            <button class="btn btn-lg btn-primary btn-block" type="button" id="login" >人脸识别登录</button>
+            <button class="btn btn-lg btn-primary btn-block" type="button" id="open-video" >开启摄像头</button>
+        </form>
+    </div> <!-- /container -->
+
+    <div>
+        <div id="show_left">
+            <video id="video" width="320"  height="320" style="margin: 0 auto; display: inline" autoplay></video>
+        </div>
+
+        <div  hidden>
+          <canvas id="canvas" width="320"  height="320"></canvas>
+<!--        </div>-->
+<!--        <div id="show_right" >-->
+<!--                <img id="img">-->
+        </div>
+    </div>
+
+
+    <script type="text/javascript"  charset="UTF-8">
+
+        function sleep(NumMillis) {
+            var nowTime = new Date();
+            var exitTime = nowTime .getTime() + NumMillis;
+            while (true) {
+            now = new Date();
+            if (now.getTime() > exitTime)
+                return;
+            }
+        }
+
+        var video = document.getElementById('video');
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext('2d');
+
+        document.getElementById("register").addEventListener("click", function () {
+            var username_btn = document.getElementById("username");
+            var password_btn = document.getElementById("pwd");
+            var username = username_btn.value;
+            var password = password_btn.value;
+            if (username == "" | username==null | password=="" | password==null){
+                // alert("必须输入用户名和密码");
+                xtalert.alertErrorToast("必须输入用户名和密码");
+            }else{
+                var video_btn = document.getElementById("open-video");
+                if ( video_btn.disabled==false){
+                    xtalert.alertErrorToast("请先打开摄像头");
+                    return;
+                }
+                context.drawImage(video, 0, 0, 320, 320);
+                var base64_image = canvas.toDataURL('image/jpg');
+                var img = document.getElementById("img");
+                $.post(
+                "http://127.0.0.1/register",
+                { "image": base64_image, "username":username, "password":password },
+                function (data, status) {
+                    if (data.code == 200){
+                        xtalert.alertSuccessToast(data.msg);
+                        var new_url = "home_page/" + data.username + "/" + data.data;
+                        window.location =new_url;
+                        username_btn.value = "";
+                        password_btn.value = "";
+                    }else{
+                       xtalert.alertErrorToast(data.msg)
+                    }
+                })
+                }
+        });
+
+        document.getElementById("open-video").addEventListener("click", function (){
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true }).then(
+                    function (stream) {
+                        video.srcObject = stream;
+                        video.play();}
+                )
+            }
+            this.disabled=true;
+        })
+
+         document.getElementById("login").addEventListener("click", function (){
+             var video_btn = document.getElementById("open-video");
+            if ( video_btn.disabled==false){
+                xtalert.alertErrorToast("请先打开摄像头");
+                return;
+            }
+
+            context.drawImage(video, 0, 0, 320, 320);
+            var base64_image = canvas.toDataURL('image/jpg');
+            // var img = document.getElementById("img");
+            $.post(
+                "http://127.0.0.1/login",
+                { "image": base64_image},
+                function (data, status) {
+                    // alert(data.code);
+                    if (data.code !=200){
+                        xtalert.alertErrorToast(data.msg)
+                    }else {
+                        // alert(data.username);
+                       xtalert.alertSuccessToast(data.msg);
+                        // var new_url = "home_page/?image=" + data.data + "&username=" +data.username;
+                        var new_url = "home_page/" + data.username + "/" + data.data;
+                        window.location =new_url;
+
+                    }
+                }
+            )
+         })
+
+    </script>
+
+</body>
+</html>

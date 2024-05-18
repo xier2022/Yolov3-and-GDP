@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gpt</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f8f8;
+    }
+    .home-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        text-decoration: none;
+    }
+    .home-button:hover {
+        background-color: #0056b3;
+        transition: background-color 0.3s;
+    }
+    .container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        grid-gap: 20px;
+    }
+    .left-section {
+        grid-column: span 3;
+        padding: 20px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+    }
+    .right-section {
+        grid-column: span 7;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+    }
+    .qr-code {
+        max-width: 100%;
+        height: auto;
+    }
+    .chat-space {
+        grid-column: span 10;
+        min-height: 300px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+    }
+    .question-bar {
+        grid-column: span 10;
+        display: flex;
+        align-items: center;
+    }
+    .question-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .send-button {
+        padding: 10px 20px;
+        margin-left: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .message {
+        margin-bottom: 10px;
+        overflow: hidden;
+    }
+    .user-message {
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        padding: 10px;
+        display: inline-block;
+        float: right;
+    }
+    .bot-message {
+        background-color: #e2f7cb;
+        border-radius: 5px;
+        padding: 10px;
+        display: inline-block;
+        float: left;
+    }
+    .clear-button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 20px; /* 调整按钮与二维码的间距 */
+    }
+
+    .clear-button:hover {
+        background-color: #0056b3;
+        transition: background-color 0.3s;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <a href="new/" class="home-button">&#8592; 返回主页</a>
+    <div class="left-section">
+        <!-- Left section content (QR code and other information) -->
+        <img class="qr-code" src="../static/pay.png" alt="QR Code">
+        <p>给我转账，谢谢(❤ ω ❤)</p>
+        <button class="clear-button" onclick="clearChat()">清空本次问答</button>
+    </div>
+    <div class="right-section">
+        <!-- Right section content (main question and answer area) -->
+        <div class="chat-space" id="chatSpace">
+            <!-- Chat space to display system answers -->
+            <div class="message">
+                <div class="bot-message">你好，请问有什么可以帮助的？</div>
+            </div>
+        </div>
+        <div class="question-bar">
+            <input type="text" class="question-input" id="userInput" placeholder="请提问......" onkeydown="handleKeyPress(event)">
+            <button id="send" class="send-button">Send</button>
+        </div>
+    </div>
+</div>
+<script src="../static/socket.io.js"></script>
+<script>
+    // 清空聊天记录
+    function clearChat() {
+        var chatSpace = document.getElementById("chatSpace");
+        chatSpace.innerHTML = '';
+    }
+    // 回车输入
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+    // 创建 Socket.IO 实例
+    const socket = io.connect('http://127.0.0.1:7000');
+
+    // 获取发送按钮元素
+    const send = document.getElementById('send');
+
+    // 点击按钮发送消息
+    send.addEventListener('click', sendMessage);
+
+    // 接收服务器响应并渲染到前端页面
+    socket.on('message_from_backend', (response) => {
+        const responseDiv = document.getElementById('chatSpace'); // 获取响应区域元素
+        const botMessage = document.createElement("div");
+        botMessage.classList.add("message");
+        const botBubble = document.createElement("div");
+        botBubble.classList.add("bot-message");
+        botBubble.textContent = response;
+        botMessage.appendChild(botBubble);
+        responseDiv.appendChild(botMessage);
+    });
+
+    // 发送消息函数
+    function sendMessage() {
+        const messageInput = document.getElementById('userInput'); // 获取输入框元素
+        const message = messageInput.value; // 获取输入框中的文本
+        if (message.trim() === "") return; // 如果消息为空则不发送
+        const chatSpace = document.getElementById('chatSpace'); // 获取聊天区域元素
+
+        // 在右侧显示用户消息
+        const userMessage = document.createElement("div");
+        userMessage.classList.add("message");
+        const userBubble = document.createElement("div");
+        userBubble.classList.add("user-message");
+        userBubble.textContent = message;
+        userMessage.appendChild(userBubble);
+        chatSpace.appendChild(userMessage);
+
+        // 通过 WebSocket 发送消息给服务器
+        socket.emit('message_from_frontend', message);
+
+        // 发送消息后清空输入框
+        messageInput.value = "";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>人脸识别体验</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/bootstrap.min.css")}}">
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/signin.css")}}">
+    <link rel="stylesheet" href="{{ url_for('static',filename="css/sweetalert.css")}}">
+    <script src="{{ url_for("static",filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/sweetalert.min.js') }}"></script>
+    <script src="{{ url_for("static",filename='js/xtalert.js') }}"></script>
+
+    <style>
+      .form-signin {
+          max-width: 400px;
+          padding: 15px;
+          margin: 0 auto;
+        }
+      #names li {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      #names li input[type="radio"] {
+        margin-right: 10px;
+      }
+      .form-signin-heading {
+          text-align: center;
+
+        }
+
+      ul#names {
+        text-align: left;
+          width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" style="width:100px;float:left;">
+    <button class="btn btn-lg btn-primary btn-block" type="button" id="back" >返回</button>
+        </div>
+    <div class="container" style="width:500px;float:center;">
+        <form class="form-signin" method="post">
+            <h2 class="form-signin-heading">用户注册管理</h2>
+<!--       {{face_list}}-->
+
+       <button class="btn btn-lg btn-primary btn-block" type="button" id="deleteFace" >删除选中</button>
+            <ul id="names"></ul>
+       <form>
+
+    </div>
+
+	<script>
+		var ul = document.getElementById("names");
+		var faceNames = {{face_list|tojson}}
+		for(let face of faceNames){
+			// 创建新的列表项目li
+			var li=document.createElement('li');
+			var radio =document.createElement("input");
+			radio.type="radio";
+			radio.name="faceName";
+			radio.value=face.name;
+			var img = document.createElement("img");
+			// li.appendChild(radio)
+			// // 给li添加新的内容
+			var text=document.createTextNode(face.name);
+			img.src = face.img_path;
+			img.style.maxHeight = "180px"; // 设置图片的最大高度为200像素
+            img.style.width = "auto"; // 设置宽度为自适应
+			li.appendChild(radio);
+			li.appendChild(text);
+			li.appendChild(img);
+			ul.appendChild(li);
+		}
+	</script>
+    <script type="text/javascript"  charset="UTF-8">
+        document.getElementById("deleteFace").addEventListener("click", function () {
+			var faceNames= document.getElementsByName("faceName");
+			var faceName='';
+			for(var i=0;i<faceNames.length;i++){
+				if(faceNames[i].checked){
+					faceName = faceNames[i].value
+					break
+				}
+			}
+			$.post(
+					"http://localhost:5002/del_feature",
+					{"name":faceName},
+
+					function(data,status){
+						alert(data.msg)
+						window.location.reload()
+						}
+
+			)
+		})
+
+        document.getElementById("back").addEventListener("click", function () {
+            var new_url = '/';
+              	 window.location =new_url;
+
+		})
+    </script>
+</body>
+</html>

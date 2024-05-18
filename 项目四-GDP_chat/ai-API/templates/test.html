@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask WebSocket Example</title>
+</head>
+<body>
+    <h1>Flask WebSocket Example</h1>
+    <input type="text" id="messageInput" placeholder="Type your message...">
+    <button id="send">Send</button>
+    <div id="response"></div>
+    <script src="../static/socket.io.js"></script>
+    <script  type="text/javascript" charset="utf-8">
+
+        //测试代码
+        {#document.addEventListener('DOMContentLoaded', (event) => {#}
+        {#    var socket = io.connect('http://' + document.domain + ':' + location.port);#}
+        {#    socket.on('connect', function () {#}
+        {#        socket.emit('my_event', {data: '我连接上了!'});#}
+        {#    });#}
+        {#    socket.on('my_response', function (msg) {#}
+        {#        alert('收到消息: ' + msg.data);#}
+        {##}
+        {#    });#}
+        {# }); #}
+
+        // 创建 Socket.IO 实例
+        const socket = io();
+
+        //获取发送按钮元素
+        const send=document.getElementById('send')
+        //document.getElementById() 是一个 DOM 方法
+        //它会在整个文档中搜索具有指定 id 的元素，并返回对该元素的引用。
+
+        // 点击按钮发送消息
+        send.addEventListener('click', () => {
+            const messageInput = document.getElementById('messageInput'); // 获取输入框元素
+            const message = messageInput.value; // 获取输入框中的文本
+            socket.emit('message_from_frontend', message); // 通过 WebSocket 发送消息给服务器
+            messageInput.value = ''; // 清空输入框
+        });
+
+
+       // 接收服务器响应并渲染到前端页面
+        socket.on('message_from_backend', (response) => {
+            const responseDiv = document.getElementById('response'); // 获取响应区域元素
+            responseDiv.innerHTML = response; // 将服务器响应渲染到响应区域
+        }); //接收响应并渲染到前端
+        socket.on()
+
+
+
+
+
+    </script>
+</body>
+</html>

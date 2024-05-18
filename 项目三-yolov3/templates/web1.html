@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>摄像头控制与拍照</title>
+</head>
+<body>
+
+<div id="camera">
+    <div style="display: flex; justify-content: center;">
+        <video id="video1" width="350px" height="350px" autoplay="autoplay"></video>
+        <video id="video2" width="350px" height="350px" autoplay="autoplay"></video>
+    </div>
+</div>
+    <br>
+<div style="display: flex; justify-content: center;">
+    <input type="button" title="摄像头" value="开启摄像头" onclick="getMedia()"/>
+    <input type="button" title="关闭摄像头" value="关闭摄像头" onclick="stopMedia(video1,video2)" />
+    <button id="snap" onclick="takePhoto()">拍照</button>
+    <button id="clearAll" onclick="clearPhoto()">清空照片</button>
+    <button id="training">开始训练</button>
+</div>
+    <br>
+<div class="upload_div" style="display:flex;justify-content:center;">
+    <input type="text" id="folderNone" placeholder="输入名称">
+    <button id="upload">上传图片</button>
+</div>
+    <br>
+<canvas id="canvas"></canvas>
+<div id="photoContainer"></div>
+    <script>
+        function getMedia() {
+            let constraints = {
+                video: {width: 500, height: 500}
+            };
+            let video1 = document.getElementById("video1");
+            let video2 = document.getElementById("video2");
+            let promise = navigator.mediaDevices.getUserMedia(constraints);
+
+            promise.then(function (MediaStream) {
+                video1.srcObject = MediaStream;
+                video1.play();
+                video2.srcObject = MediaStream;
+                video2.play();
+            }).catch(function (error) {
+                console.log("Error accessing media devices.", error);
+            });
+        }
+        
+        function takePhoto() {
+            //获得Canvas对象
+            let canvas = document.getElementById("canvas");
+            let ctx = canvas.getContext('2d');
+            //绘图
+            ctx.drawImage(video1, 0, 0, 100, 100);
+            //获取当前时间戳作为照片名称
+            let timestamp = new Date().getTime();
+            //创建一个a标签用于下载照片
+            let link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'photo_' + timestamp + '.png';
+            // 将照片展示在网页下方
+            let photo = document.createElement('img');
+            photo.src = link.href;
+            photo.alt = "photo";
+            // 将照片添加到数组中
+            let photoContainer = document.getElementById("photoContainer");
+            // 将照片添加到数组中，并设置横向排列样式
+            photoContainer.appendChild(photo);
+        }
+
+        function stopMedia(videoElem) {
+            const stream = videoElem.srcObject;
+	        const tracks = stream.getTracks();
+            tracks.forEach(function(track) {
+		    track.stop();  //停止视频流
+		});
+	        videoElem.srcObject = null;
+            //获取两个视频元素
+            const video1 = document.getElementById("video1");
+            const video2 = document.getElementById("video2");
+            //调用函数，停止两个视频的播放
+            stopMedia(video1);
+            stopMedia(video2);
+            // 从DOM中删除视频元素
+            video1.remove();
+            video2.remove();
+        }
+
+
+        function clearPhoto() {
+        let photos = document.getElementsByTagName('img');
+          if (photos.length > 0) {
+        photos[photos.length - 1].parentNode.removeChild(photos[photos.length - 1]);
+        }
+   }
+
+        document.getElementById("upload").addEventListener("click", function() {
+            // 获取输入的名称
+            let name = document.getElementById("folderNone").value;
+            // 创建一个新的a标签用于下载图片
+            let link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = name + '.png';
+            // 触发点击事件，开始下载图片
+            link.click();
+        });
+
+    </script>
+</body>
+</html>

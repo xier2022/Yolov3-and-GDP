@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Stream</title>
+</head>
+<body>
+<!-- 视频元素用于显示摄像头数据 -->
+<video id="video" width="640" height="480" autoplay></video>
+<!-- 用于绘制图像的画布元素 -->
+<canvas id="canvas" width="640" height="480"></canvas>
+<!-- 按钮用于启动摄像头 -->
+<button id="start">Start</button>
+
+<!-- 引入 Socket.IO 客户端库 -->
+<script src="../static/socket.io.js"></script>
+<script>
+    // 创建 Socket.IO 实例
+    const socket = io.connect('http://127.0.0.1:5002')
+
+
+    // 获取视频元素、画布元素和开始按钮元素
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startButton = document.getElementById('start');
+
+    // 点击按钮启动摄像头
+    startButton.addEventListener('click', () => {
+        // 获取摄像头数据流
+        navigator.mediaDevices.getUserMedia({video: true})
+            .then(stream => {
+                // 将数据流赋给视频元素
+                video.srcObject = stream;
+                // 获取画布上下文
+                const context = canvas.getContext('2d');
+                // 每隔一段时间发送一帧图像
+                setInterval(() => {
+                    // 在画布上绘制视频帧
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // 将画布数据转换为图像数据 URL
+                    const imageData = canvas.toDataURL('image/jpeg');
+                    // 发送图像数据到后端
+                    socket.emit('video_frame', {frame: imageData});
+                }, 100); // 每100毫秒发送一帧
+            })
+            .catch(error => {
+                console.error('Unable to access camera:', error);
+            });
+    });
+
+    // 接收处理后的图像数据并渲染到前端
+    socket.on('processed_frame', data => {
+        // 获取画布元素
+        const canvas = document.getElementById('canvas_1');
+        const context = canvas.getContext('2d');
+
+        // 创建图像元素用于加载处理后的图像数据
+        const processedImage = new Image();
+        processedImage.onload = () => {
+            // 在画布上绘制图像
+            context.drawImage(processedImage, 0, 0, canvas.width, canvas.height);
+        };
+
+        // 加载处理后的图像数据
+        processedImage.src = data.processedFrame;
+    });
+
+</script>
+</body>
+</html>

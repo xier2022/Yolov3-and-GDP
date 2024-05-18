@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo</title>
+  <!-- 请勿在项目正式环境中引用该 layui.css 地址 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/css/layui.css">
+</head>
+<body>
+<ul class="layui-nav">
+  <li class="layui-nav-item layui-this"><a href="">选中</a></li>
+  <li class="layui-nav-item">
+    <a href="javascript:;">常规</a>
+  </li>
+
+  <li class="layui-nav-item">
+    <a href="{{ url_for('show_one') }}">人脸比对</a>
+  </li>  <li class="layui-nav-item">
+    <a href="{{ url_for('show_two') }}">特征分析</a>
+  </li>
+
+  <li class="layui-nav-item"><a href="">导航</a></li>
+<!--  <li><i class="layui-icon layui-icon-face-smile" style="font-size: 20px; color: #1E9FFF;"></i></li>-->
+  <li class="layui-nav-item">
+    <a href="javascript:;">子级</a>
+    <dl class="layui-nav-child">
+      <dd><a href="{{ url_for('show_one') }}">人脸比对</a></dd>
+      <dd><a href="{{ url_for('show_two') }}">特征分析</a></dd>
+    </dl>
+  </li>
+  <i class="layui-icon layui-icon-face-smile" style="font-size: 20px; color: #1E9FFF;"></i>
+<!--  <li><i class="layui-icon layui-icon-face-smile" style="font-size: 20px; color: #1E9FFF;"></i></li>-->
+</ul>
+<i class="layui-icon layui-icon-face-smile" style="font-size: 20px; color: #1E9FFF;"></i>
+
+
+<!-- 请勿在项目正式环境中引用该 layui.js 地址 -->
+<script src="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/layui.js"></script>
+
+</body>
+</html>

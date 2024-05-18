@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>main</title>
+
+    <link href="//unpkg.com/layui@2.9.8/dist/css/layui.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/layui@2.6.8/dist/css/layui.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+
+
+    <style>
+        /* 将按钮样式更改为蓝色 */
+        .layui-btn {
+            color: white; /* 设置按钮文本颜色为白色 */
+            width: calc(10% - 10px); /* 计算按钮的宽度，使得按钮平分父容器的宽度，并考虑按钮之间的间隙 */
+            margin-right: 10px; /* 设置按钮之间的间隙 */
+        }
+        /* 最后一个按钮不需要右边距 */
+        .layui-btn:last-child {
+            margin-right: 0;
+        }
+        </style>
+<body>
+
+<div id="camera">
+    <div style="display: flex; justify-content: center;">
+        <!-- 视频元素用于显示摄像头数据 -->
+        <video id="video" width="640" height="480" autoplay></video>
+        <!-- 用于绘制图像的画布元素 -->
+        <canvas id="canvas_1" width="640" height="480"></canvas>
+    </div>
+</div>
+
+<br>
+<div style="display: flex; justify-content: center;">
+    <button id="start" type="button" class="layui-btn layui-btn-normal layui-btn-radius layui-btn-primary layui-btn-sm">开启摄像头</button>
+    <button id="close" type="button" class="layui-btn layui-btn-normal layui-btn-radius layui-btn-primary layui-btn-sm">关闭摄像头</button>
+    <button id="photo" type="button" class="layui-btn layui-btn-normal layui-btn-radius layui-btn-primary layui-btn-sm">拍照</button>
+    <button id="clear" type="button" class="layui-btn layui-btn-normal layui-btn-radius layui-btn-primary layui-btn-sm">清空照片</button>
+    <button id="train" type="button" class="layui-btn layui-btn-normal layui-btn-radius layui-btn-primary layui-btn-sm">开始训练</button>
+</div>
+
+<br>
+<div class="upload_div" style="display:flex;justify-content:center;">
+    <input type="text" id="folderName" placeholder="输入名称">
+    <button id="upload" type="button" class="layui-btn layui-btn-normal layui-btn-radius layui-btn-primary layui-btn-sm">上传图片</button>
+</div>
+
+
+<br>
+
+<div id="photoContainer" style="display: flex; justify-content: center; flex-wrap: wrap;"></div>
+
+<script src="https://cdn.jsdelivr.net/layui@2.6.8/dist/css/layui.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+
+    //const socket = io.connect("http://"+document.domain+":"+location.port);
+
+    // 创建 Socket.IO 实例
+    const socket = io.connect('http://127.0.0.1:8080');
+
+    // 获取视频元素、画布元素和开始按钮元素
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas_1');
+    const startButton = document.getElementById('start');
+    const closeButton = document.getElementById('close');
+    const photoButton = document.getElementById('photo');
+    const clearButton = document.getElementById('clear');
+    const trainButton = document.getElementById('train');
+    const uploadButton = document.getElementById('upload');
+
+    // 点击按钮启动摄像头
+    startButton.addEventListener('click', () => {
+        // 获取摄像头数据流
+        navigator.mediaDevices.getUserMedia({video: true})
+            .then(stream => {
+                // 将数据流赋给视频元素
+                video.srcObject = stream;
+                // 获取画布上下文
+                const context = canvas.getContext('2d');
+                // 每隔一段时间发送一帧图像
+                setInterval(() => {
+                    // 在画布上绘制视频帧
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // 将画布数据转换为图像数据 URL
+                    const imageData = canvas.toDataURL('image/jpeg');
+                    // 发送图像数据到后端
+                    socket.emit('video_frame', {frame: imageData});
+                }, 100); // 每100毫秒发送一帧
+            })
+            .catch(error => {
+                console.error('Unable to access camera:', error);
+            });
+    });
+
+    // 接收处理后的图像数据并渲染到前端
+    socket.on('processed_frame', data => {
+        console.log(data.processedFrame)
+        // 获取画布元素
+        const canvas = document.getElementById('canvas_1');
+        const context = canvas.getContext('2d');
+
+        // 创建图像元素用于加载处理后的图像数据
+        const processedImage = new Image();
+        processedImage.onload = () => {
+            // 在画布上绘制图像
+            context.drawImage(processedImage, 0, 0, canvas.width, canvas.height);
+        };
+
+        // 加载处理后的图像数据
+        processedImage.src = data.processedFrame;
+    });
+
+
+    // 关闭摄像头
+    closeButton.addEventListener('click', () => {
+        // 获取视频流
+        const stream = video.srcObject;
+        if (stream) {
+            // 获取所有轨道
+            const tracks = stream.getTracks();
+            // 停止每个轨道
+            tracks.forEach(track => {
+                track.stop();
+            });
+            // 清空视频元素的视频流
+            video.srcObject = null;
+        }
+    });
+
+
+    // 拍照
+    photoButton.addEventListener('click', () => {
+        // 创建一个新的图像元素
+        const img = new Image();
+        // 将画布内容转换为图像数据
+        img.src = canvas.toDataURL('image/png');
+        // 设置图像样式
+        img.style.width = '200px'; // 设置图片宽度
+        img.style.height = 'auto'; // 自动计算图片高度，保持比例
+        img.style.margin = '5px'; // 设置图片间距
+        // 将图像添加到照片容器中
+        document.getElementById('photoContainer').appendChild(img);
+    });
+
+    // 清空照片
+    clearButton.addEventListener('click', () => {
+        // 清空照片容器
+        document.getElementById('photoContainer').innerHTML = '';
+    });
+
+    // 上传按钮点击事件
+    uploadButton.addEventListener('click', () => {
+        // 获取照片容器中的所有图片元素
+        const images = document.getElementById('photoContainer').querySelectorAll('img');
+
+        // 如果没有拍摄的照片，则提示用户先拍摄照片
+        if (images.length === 0) {
+            alert('请先拍摄照片！');
+            return;
+        }
+
+        // 遍历每张图片
+        images.forEach((image, index) => {
+            // 将图片转换为 Blob 对象
+            fetch(image.src)
+                .then(response => response.blob())
+                .then(blob => {
+                    // 创建一个链接元素
+                    const downloadLink = document.createElement('a');
+                    // 设置链接的 href 属性为 Blob 对象的 URL
+                    downloadLink.href = URL.createObjectURL(blob);
+                    // 设置下载的文件名
+                    downloadLink.download = `${index + 1}.yyh.png`;
+                    // 模拟点击链接来触发下载
+                    downloadLink.click();
+                    // 释放 URL 对象
+                    URL.revokeObjectURL(downloadLink.href);
+                });
+        });
+    });
+
+
+    // 开始训练按钮点击事件
+    trainButton.addEventListener('click', () => {
+        fetch('/train_model') // 向 Flask 后端发送 GET 请求
+            .then(response => response.text()) // 解析响应文本
+            .then(data => {
+                console.log(data); // 打印后端返回的数据
+                alert(data); // 弹出提示框显示返回的数据
+            })
+            .catch(error => console.error('Error:', error)); // 捕获错误并打印
+    });
+
+
+
+</script>
+</body>
+</html>

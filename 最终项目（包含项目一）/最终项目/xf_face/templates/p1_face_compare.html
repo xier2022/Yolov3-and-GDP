@@ -1,0 +1,186 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸识别系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/css/layui.css">
+
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .image-upload {
+            display: none;
+        }
+    </style>
+    <style>
+        /* 自定义按钮样式 */
+        .layui-btn-container {
+            text-align: center; /* 按钮居中 */
+        }
+
+        /* 悬停时的样式 */
+        .layui-btn:hover {
+            background-color: #2b6cb0; /* 深蓝色背景 */
+        }
+    </style>
+    <style>
+        body {
+            /* 设置背景图片并平铺 */
+            background-image: url('bgd1.png'); /* 替换 'background-image.jpg' 为您的图片路径 */
+            background-repeat: no-repeat; /* 不重复平铺 */
+            background-size: cover; /* 图片尺寸铺满整个屏幕 */
+            background-position: center; /* 图片居中显示 */
+        }
+    </style>
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: 'Noto Sans SC', sans-serif;-->
+<!--            /* 设置背景图片并平铺 */-->
+<!--            background-image: url('bgd1.png'); /* 替换 'bgd1.png' 为您的图片路径 */-->
+<!--            background-repeat: no-repeat; /* 不重复平铺 */-->
+<!--            background-size: cover; /* 图片尺寸铺满整个屏幕 */-->
+<!--            background-position: center; /* 图片居中显示 */-->
+<!--        }-->
+
+<!--        .image-upload {-->
+<!--            display: none;-->
+<!--        }-->
+
+<!--        /* 自定义按钮样式 */-->
+<!--        .layui-btn-container {-->
+<!--            text-align: center; /* 按钮居中 */-->
+<!--        }-->
+
+<!--        /* 悬停时的样式 */-->
+<!--        .layui-btn:hover {-->
+<!--            background-color: #2b6cb0; /* 深蓝色背景 */-->
+<!--        }-->
+<!--    </style>-->
+
+</head>
+<body class="bg-gray-200">
+{#    <a href="new/" class="home-button">&#8592; 返回主页</a>#}
+{#    <div class="w-full bg-blue-800 py-6 px-4 text-white text-center text-2xl font-semibold">#}
+{#        人脸比对#}
+{#    </div>#}
+<div class="w-full bg-blue-800 py-6 px-4 text-white text-center text-xl font-semibold flex justify-between items-center">
+    <a href="new/" class="text-sm">返回主页</a>
+    <span class="flex-grow">人脸比对</span>
+    <div></div><!-- 空的 div 元素用于撑开中间内容，使其居中 -->
+</div>
+
+    <div class="flex justify-between items-center px-10 py-8">
+        <div class="flex flex-col items-center" style="width: 50%;">
+<!--             第一个图片容器-->
+            <div class="bg-blue-400 w-96 h-144 mb-4">
+                <img id="image1" class="w-full h-full object-cover" src="https://img.zcool.cn/community/01ae535b7d368da80120577d2373bb.jpeg?x-oss-process=image/resize,m_fill,w_260,h_195,limit_0/auto-orient,1/sharpen,100" alt="Placeholder image for the first selected file">
+            </div>
+            <div class="layui-btn-container">
+                <button type="button" class="layui-btn layui-btn-normal layui-btn-radius" onclick="document.getElementById('upload1').click()">上传图片</button>
+                <input id="upload1" class="image-upload" type="file" accept="image/*" onchange="document.getElementById('image1').src = window.URL.createObjectURL(this.files[0])" style="display: none;">
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center">
+            <div class="bg-white w-64 py-2 px-4 mb-4">
+                <div class="text-gray-700 text-sm mb-2">相似度：</div>
+                <p type="text" class="border border-blue-300 text-blue-500 w-full h-8 px-2" id="message" disabled></p>
+                <div class="text-gray-700 text-sm mt-2">注：67%以上算识别为同一人</div>
+            </div>
+
+            <div class="layui-btn-container">
+                <button id="getDataBtn_1" class="layui-btn layui-btn-normal layui-btn-radius">开始比对</button>
+            </div>
+
+        </div>
+
+        <div class="flex flex-col items-center" style="width: 50%;">
+<!--             第二个图片容器-->
+            <div class="bg-blue-400 w-96 h-144 mb-4">
+                <img id="image2" class="w-full h-full object-cover" src="https://img.zcool.cn/community/01ae535b7d368da80120577d2373bb.jpeg?x-oss-process=image/resize,m_fill,w_260,h_195,limit_0/auto-orient,1/sharpen,100" alt="Placeholder image for the second selected file">
+            </div>
+            <div class="layui-btn-container">
+                <button type="button" class="layui-btn layui-btn-normal layui-btn-radius" onclick="document.getElementById('upload2').click()">上传图片</button>
+                <input id="upload2" class="image-upload" type="file" accept="image/*" onchange="document.getElementById('image2').src = window.URL.createObjectURL(this.files[0])" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script src="https://lib.baomitu.com/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/layui@2.6.8/dist/layui.js"></script>
+
+
+    <script>
+        function previewPhotos() {
+            var fileInput1 = document.getElementById('upload1'); // 获取文件输入框1
+            var fileInput2 = document.getElementById('upload2'); // 获取文件输入框2
+            var file1 = fileInput1.files[0]; // 获取选择的文件1
+            var file2 = fileInput2.files[0]; // 获取选择的文件2
+            var reader1 = new FileReader(); // 创建文件读取器1
+            var reader2 = new FileReader(); // 创建文件读取器2
+
+            reader1.onload = function(e) { // 当文件1读取完成时执行此函数
+                var preview1 = document.getElementById('image1'); // 获取图片预览元素1
+                preview1.src = e.target.result; // 将文件1的内容设置为图片预览1的源
+                preview1.style.display = 'block'; // 显示图片预览1
+            }
+
+            reader2.onload = function(e) { // 当文件2读取完成时执行此函数
+                var preview2 = document.getElementById('image2'); // 获取图片预览元素2
+                preview2.src = e.target.result; // 将文件2的内容设置为图片预览2的源
+                preview2.style.display = 'block'; // 显示图片预览2
+            }
+
+            if (file1) { // 检查文件1是否存在
+                reader1.readAsDataURL(file1); // 读取文件1的内容，并触发onload事件
+            }
+
+            if (file2) { // 检查文件2是否存在
+                reader2.readAsDataURL(file2); // 读取文件2的内容，并触发onload事件
+            }
+        }
+
+        $(document).ready(function(){
+            $("#getDataBtn_1").click(function (){
+                var fileInput1 = document.getElementById('upload1'); // 获取文件输入框1
+                var fileInput2 = document.getElementById('upload2'); // 获取文件输入框2
+                var file1 = fileInput1.files[0]; // 获取选择的文件1
+                var file2 = fileInput2.files[0]; // 获取选择的文件2
+
+                if (file1 && file2) { // 检查是否选择了两个文件
+                  var formData = new FormData(); // 创建表单数据对象
+                  formData.append('file1', file1); // 将文件1添加到表单数据中
+                  formData.append('file2', file2); // 将文件2添加到表单数据中
+
+                  $.ajax({
+                      url:'/feature_compare', // 请求的URL
+                      type:'POST', // 请求类型为POST
+                      data: formData, // 发送的数据为表单数据
+                      processData: false, // 不对数据进行处理
+                      contentType: false, // 不设置请求头类型
+                      success:function(response){ // 请求成功时的回调函数
+                          console.log(response.score); // 输出响应的分数
+                          $("#message").text(response.score); // 将分数显示在页面上
+                      },
+                      error:function(error){ // 请求发生错误时的回调函数
+                          console.log(error); // 在控制台输出错误信息
+                      }
+                  });
+                } else {
+                  console.log("Please select two files."); // 若未选择两个文件，则在控制台输出错误消息
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+

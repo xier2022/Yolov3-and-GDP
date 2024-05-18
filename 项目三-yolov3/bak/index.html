@@ -1,0 +1,96 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>人脸识别体验</title>
+	<link rel="stylesheet" href="">
+</head>
+
+<body>
+<video id="video" width="640" , height="480" autoplay></video>
+<img id="img">
+<button id="snap">点击开始拍照识别</button>
+
+	<div hidden><canvas id="canvas" width="640" , height="480">您的浏览器不支持，请更换浏览器</canvas></div>
+
+	<canvas id="data" width="640" , height="480">您的浏览器不支持，请更换浏览器</canvas>
+
+	<script src="{{url_for('static', filename = 'jquery-3.6.0.min.js')}}"></script>
+	<script src="static/jquery-3.6.0.min.js"></script>
+
+	<script>
+		function get_name() {
+			var name = prompt("请输入您的名字");
+			while (name == ""){
+				alert("输入不规范，请重新输入");
+				name = prompt("请输入您的名字");
+			};
+			if (name == null){
+				alert("您取消了输入。请重新拍照识别。");
+			}
+			return name;
+		}
+	</script>
+
+	<script>
+		var video = document.getElementById('video');
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia({ video: true }).then(
+				function (stream) {
+					video.srcObject = stream;
+					video.play();
+				});
+		}
+
+		var canvas = document.getElementById("canvas");
+		var context = canvas.getContext('2d');
+
+		canvas.width = 640;
+		canvas.height = 480;
+
+		document.getElementById("snap").addEventListener("click", function () {
+			current = video;
+			context.drawImage(current, 0, 0, 640, 480);
+			var base64_image = canvas.toDataURL('image/jpg');
+			//  可以抓取HTML5 canvas的内容，从toDataURL()函数返回的数据是一个字符串，表示包含抓取的图形数据的编码URL
+
+			$.post(
+				"http://127.0.0.1/image",
+				{ "data": base64_image },
+				function (data, status) {
+					// alert(data.code, data.data);
+					if (data.code == 400){
+						alert(data.msg);
+					}else if (data.code ==401)
+					{
+						alert(data.msg);
+						var person_name = get_name();
+						person_id = data.data;
+						$.post(
+							"http://127.0.0.1/add_feature",
+							{ "name": person_name, "id": person_id},
+							function (data, status) {
+								if (data.code == 200){
+									alert("添加成功！请点击识别按钮再次识别。");
+								}else if(data.code ==407){
+									//alert("用户取消输入, " + data.msg + "。请重新拍照识别。");
+								}
+								else{
+									alert(data.msg);
+								}
+							})
+					}
+					else {
+						var url = "data:image/png;base64," + data.data;
+						var img = document.getElementById("img");
+						img.setAttribute("src", url);
+					}
+				})
+		})
+	</script>
+
+</body>
+
+
+</html>
